@@ -1,28 +1,34 @@
 const fs = require('fs');
 const readline = require('readline');
 
-const filePath = 'C:/Users/User/Desktop/HTML-builder/HTML-builder/02-write-file/outputFile.txt';
-const writeStream = fs.createWriteStream(filePath, { flags: 'a' });
-
-console.log('Welcome! Enter text or type "exit" to quit.');
-
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout,
+  output: process.stdout
 });
+
+const filePath = './02-write-file/output.txt';
+
+console.log('Welcome! Please enter your text (type "exit" to quit):');
 
 rl.on('line', (input) => {
   if (input.toLowerCase() === 'exit') {
     console.log('Exiting...');
     rl.close();
   } else {
-    writeStream.write(input + '\n', 'utf8');
+    fs.appendFile(filePath, input + '\n', (err) => {
+      if (err) {
+        console.error('Error writing to file:', err);
+      } else {
+        console.log('Text written to file successfully!');
+      }
+      console.log('Enter your text:');
+    });
   }
 });
 
 rl.on('close', () => {
   console.log('Goodbye!');
-  writeStream.end();
+  process.exit(0);
 });
 
 
