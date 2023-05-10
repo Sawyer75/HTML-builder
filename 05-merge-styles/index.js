@@ -1,29 +1,43 @@
-const fs = require('fs-extra');
+const fs = require('fs');
 const path = require('path');
 
-const stylesFolder = path.join(__dirname, 'styles');
-const distFolder = path.join(__dirname, 'project-dist');
-const outputFile = path.join(distFolder, 'bundle.css');
+const stylesFolderPath = path.join(__dirname, 'styles');
+const distFolderPath = path.join(__dirname, 'project-dist');
+const outputFile = path.join(distFolderPath, 'bundle.css');
 
-async function collectStyles() {
-  try {
-    const files = await fs.readdir(stylesFolder);
-    const cssFiles = files.filter((file) => path.extname(file) === '.css');
-
-    let collectedStyles = '';
-
-    for (const file of cssFiles) {
-      const filePath = path.join(stylesFolder, file);
-      const fileContent = await fs.readFile(filePath, 'utf8');
-      collectedStyles += fileContent;
+function collectStyles() {
+  fs.readdir(stylesFolderPath, (err, files) => {
+    if (err) {
+      console.error('Error reading styles folder:', err);
+      return;
     }
 
-    await fs.ensureDir(distFolder);
-    await fs.writeFile(outputFile, collectedStyles);
+    const cssFiles = files.filter(file => path.extname(file) === '.css');
 
-    console.log('bundle.css file created');
-  } catch (error) {
-    console.error('Error writing bundle.css file:', error);
-  }
+    const styles = [];
+
+    cssFiles.forEach(file => {
+      const filePath = path.join(stylesFolderPath, file);
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading file:', err);
+          return;
+        }
+        styles.push(data);
+
+        if (styles.length === cssFiles.length) {
+          const allStyles = styles.join('\n');
+          fs.writeFile(outputFile, allStyles, err => {
+            if (err) {
+              console.error('Error writing bundle.css file:', err);
+              return;
+            }
+            console.log('bundle.css file created successfully.');
+          });
+        }
+      });
+    });
+  });
 }
+
 collectStyles();
